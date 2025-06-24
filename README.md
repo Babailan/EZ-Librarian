@@ -44,7 +44,7 @@
 ## 🙋 FAQ
 
 **Q: Why didn't the librarian change trades?**
-A: Check that the enchantment is valid, exactly spelled, and case-sensitive. Also, ensure the villager hasn’t been traded with.
+A: Check that the enchantment is valid, exactly spelled.
 
 **Q: Can I use multiple sentences in the book?**
 A: Yes, but only the **first sentence** is used.
