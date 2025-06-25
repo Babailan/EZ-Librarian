@@ -8,7 +8,7 @@
 ## ✨ Features
 
 * 📖 **Insert a written book** into a **lectern** to trigger the enchantment.
-* 🧠 The **first sentence** of the book must exactly match the name of a valid enchantment (e.g., `Mending`, `Fortune`).
+* 🧠 The **first sentence** of the book must exactly match the name of a valid enchantment (e.g., `Mending`, `Fortune III`).
 * 👨‍🏫 Works **only** on **novice librarians** (hasn’t been traded with).
 * ⚡ Activates automatically when the book is placed — no need to break or replace anything.
 * 🔒 **Locks** the trade after setting the enchantment to ensure a **balanced trading system** — no more infinite rerolling.
