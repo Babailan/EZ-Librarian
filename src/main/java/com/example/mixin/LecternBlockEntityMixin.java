@@ -1,5 +1,9 @@
 package com.example.mixin;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -17,6 +21,8 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.NbtWriteView;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -31,7 +37,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Mixin to extend {@link LecternBlockEntity} behavior.
@@ -60,8 +68,8 @@ public class LecternBlockEntityMixin extends BlockEntity {
             if (villagerEntity == null) {
                 return;
             }
-            // prevent injection if villager is already traded.
-            if (villagerEntity.getExperience() > 0) {
+            // prevent injection if villager got experience already.
+            if (villagerEntity.getExperience() != 0) {
                 return;
             }
             TradeOffer targetBook = getTargetBook(book, villagerEntity);
@@ -93,10 +101,10 @@ public class LecternBlockEntityMixin extends BlockEntity {
 
 
             villagerEntity.setOffers(modifiedTradeOffer);
+            // Lock villager trade offer so memory module ai thinks it got job already even tho -1 it still matter.
+            villagerEntity.setExperience(-1);
             villagerEntity.getWorld().getChunk(villagerEntity.getBlockPos()).markNeedsSaving();
             villagerEntity.playSound(SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE);
-            //TODO
-            // - LOCK THE VILLAGER AFTER GETTING THE REROLL HERE;
 
         }
     }
