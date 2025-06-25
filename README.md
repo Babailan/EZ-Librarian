@@ -40,9 +40,3 @@ A: Yes — as long as each station uses a lectern and written book properly.
 **Q: Can I reroll the trade again after it's locked?**
 A: No — once the enchantment is applied, the trade is **locked permanently** for balance.
 
----
-
-## 📢 Feedback
-
-* Report bugs or suggestions on [GitHub Issues](#)
-
