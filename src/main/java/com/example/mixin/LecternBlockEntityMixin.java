@@ -1,9 +1,5 @@
 package com.example.mixin;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -16,18 +12,21 @@ import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.*;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.NbtWriteView;
-import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.GlobalPos;
-import net.minecraft.village.*;
+import net.minecraft.village.TradeOffer;
+import net.minecraft.village.TradeOfferList;
+import net.minecraft.village.TradeOffers;
+import net.minecraft.village.TradedItem;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -37,9 +36,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Mixin to extend {@link LecternBlockEntity} behavior.
@@ -188,38 +185,15 @@ public class LecternBlockEntityMixin extends BlockEntity {
         ItemStack enchantedBook = new ItemStack(Items.ENCHANTED_BOOK);
         enchantedBook.set(DataComponentTypes.STORED_ENCHANTMENTS, enchantBuilder.build());
 
-        // AtomicReference is used when you try to set something inside lambdaaaaa; if you were to ask me.
-        AtomicReference<TradeOffer> generatedTradeOffer = new AtomicReference<>(
-                new TradeOffers.EnchantBookFactory(5, EnchantmentTags.TRADEABLE).create(villagerEntity, world.random)
-        );
-        assert generatedTradeOffer.get() != null;
+        TradeOffer generatedTradeOffer = new TradeOffers.EnchantBookFactory(5, EnchantmentTags.TRADEABLE).create(villagerEntity, world.random);
+        assert generatedTradeOffer != null;
 
-        DynamicRegistryManager registryManager = Objects.requireNonNull(world.getServer()).getRegistryManager();
-        RegistryOps<JsonElement> registryOps = RegistryOps.of(JsonOps.INSTANCE, registryManager);
-
-        DataResult<JsonElement> encodedTradeOfferResult = TradeOffer.CODEC.encodeStart(registryOps, generatedTradeOffer.get());
-
-        encodedTradeOfferResult.result().ifPresent(encodedJson -> {
-            if (encodedJson.isJsonObject()) {
-                JsonObject buyObject = encodedJson.getAsJsonObject().getAsJsonObject("buy");
-
-                // make the min 32 since it would be overpowered if it's below that range.
-                int min = 32;
-                int max = 64;
-                int randomPrice = min + (int) (Math.random() * (max - min + 1));
-
-                buyObject.addProperty("count", randomPrice);
-
-                DataResult<Pair<TradeOffer, JsonElement>> decodedModifiedTradeOfferResult =
-                        TradeOffer.CODEC.decode(registryOps, encodedJson);
-
-                decodedModifiedTradeOfferResult.result().ifPresent(decodedPair -> {
-                    generatedTradeOffer.set(decodedPair.getFirst());
-                });
-            }
-        });
-
-        return new TradeOffer(generatedTradeOffer.get().getFirstBuyItem(), generatedTradeOffer.get().getSecondBuyItem(), enchantedBook, generatedTradeOffer.get().getMaxUses(), generatedTradeOffer.get().getMerchantExperience(), generatedTradeOffer.get().getPriceMultiplier());
+        //make a random price range(32,64);
+        int min = 32;
+        int max = 64;
+        int randomPrice = min + (int) (Math.random() * (max - min + 1));
+        TradedItem emerald = new TradedItem(Items.EMERALD, randomPrice);
+        return new TradeOffer(emerald, generatedTradeOffer.getSecondBuyItem(), enchantedBook, generatedTradeOffer.getMaxUses(), generatedTradeOffer.getMerchantExperience(), generatedTradeOffer.getPriceMultiplier());
     }
 
     /**
