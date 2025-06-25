@@ -10,6 +10,7 @@
 * 🧠 The **first sentence** of the book must exactly match the name of a valid enchantment (e.g., `Mending`, `Fortune`).
 * 👨‍🏫 Works **only** on **novice librarians** (hasn’t been traded with).
 * ⚡ Activates automatically when the book is placed — no need to break or replace anything.
+* 🔒 **Locks** the trade after setting the enchantment to ensure a **balanced trading system** — no more infinite rerolling.
 * ⏱ Saves time and effort by eliminating random rerolls.
 
 ---
@@ -23,25 +24,17 @@
 
 ---
 
-## 🎮 How to Use
-
-1. Write a **written book** and **sign** it.
-2. In the **first sentence**, write the exact name of a **vanilla enchantment** (e.g., `Mending`).
-3. Place the book into a **lectern**.
-4. Have a **novice librarian villager** nearby.
-5. The librarian will automatically offer the requested enchantment (if valid and available).
-
----
 
 ## 🧠 Notes & Tips
 
-* 🧙 Only one enchantment can be requested — the **first sentence only** is used.
+* 🧙 Only one enchantment can be requested — the **first sentence only** is used(and lock the trade after).
 * 👨‍🏫 The villager must be a **novice** with **no trades** made.
 * 💬 Invalid or unrecognized enchantments will do nothing.
+* 🔄 Once the enchantment is set, the trade is **permanently locked**, even if the lectern is broken or replaced.
 
 ---
 
-## 🙋 FAQ
+## 😗 FAQ
 
 **Q: Why didn't the librarian change trades?**
 A: Check that the enchantment is valid, exactly spelled.
@@ -52,13 +45,12 @@ A: Yes, but only the **first sentence** is used.
 **Q: Can I automate this with trading halls?**
 A: Yes — as long as each station uses a lectern and written book properly.
 
+**Q: Can I reroll the trade again after it's locked?**
+A: No — once the enchantment is applied, the trade is **locked permanently** for balance.
+
 ---
 
-## 📫 Feedback
+## 📢 Feedback
 
 * Report bugs or suggestions on [GitHub Issues](#)
-* Contact: [babailanxx@gmail.com](mailto:babailanxx@gmail.com)
 
----
-
-Let me know if you want this as a file or formatted for a specific platform like GitHub, Modrinth, or CurseForge.
