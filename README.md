@@ -3,6 +3,7 @@
 **EZ Librarian** is a Minecraft mod that simplifies librarian enchanting. Instead of rerolling endlessly, players can place a written book into a lectern — and a nearby novice librarian will offer the enchantment named in the book.
 
 ---
+📺 [Watch the full demo on YouTube](https://www.youtube.com/watch?v=YYp5JRZXx-4)
 
 ## ✨ Features
 
@@ -12,15 +13,6 @@
 * ⚡ Activates automatically when the book is placed — no need to break or replace anything.
 * 🔒 **Locks** the trade after setting the enchantment to ensure a **balanced trading system** — no more infinite rerolling.
 * ⏱ Saves time and effort by eliminating random rerolls.
-
----
-
-## 📦 Installation
-
-1. Install [Fabric Loader](https://fabricmc.net/) (or Forge, if supported).
-2. Download the latest `.jar` release of **EZ Librarian**.
-3. Place the file in your Minecraft `mods` folder.
-4. Launch the game with the corresponding mod loader.
 
 ---
 
