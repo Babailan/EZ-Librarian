@@ -205,12 +205,17 @@ public class LecternBlockEntityMixin extends BlockEntity {
      */
     @Unique
     private int romanToInt(String stringLevel) {
-        return switch (stringLevel) {
-            case "ii" -> 2;
-            case "iii" -> 3;
-            case "iv" -> 4;
-            case "v" -> 5;
-            default -> 1;
-        };
+        try {
+            int level = Integer.parseInt(stringLevel);
+            return switch (stringLevel) {
+                case "ii" -> 2;
+                case "iii" -> 3;
+                case "iv" -> 4;
+                case "v" -> 5;
+                default -> level;
+            };
+        } catch (NumberFormatException e) {
+            return 5;
+        }
     }
 }
