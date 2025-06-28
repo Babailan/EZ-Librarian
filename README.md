@@ -16,6 +16,7 @@
 
 ## Downloads Links:
 - [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ez-librarian)
+- [Availabe Version Here](https://github.com/Babailan/EZ-Librarian/tags)
 
 
 ## 🧠 Notes & Tips
