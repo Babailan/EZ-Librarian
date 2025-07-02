@@ -26,6 +26,8 @@
 
 ---
 
+
+
 ## 😗 FAQ
 
 **Q: Why didn't the librarian change trades?**
@@ -39,4 +41,22 @@ A: Yes — as long as each station uses a lectern and written book properly.
 
 **Q: Can I reroll the trade again after it's locked?**
 A: No — once the enchantment is applied, the trade is **locked permanently** for balance.
+
+## 📘 Price Generation Based on Statistical Distribution
+
+Book prices are generated using a **normal (Gaussian) distribution** from a sample space of **1,000,000 simulations**.
+
+- **Mean (μ)**: 32
+- **Standard Deviation (σ)**: *σ* (configurable based on price variability)
+
+This approach ensures that most prices are concentrated around **32 Emerald** , while higher or lower prices occur less frequently depending on the value of **σ**.
+
+You can the prices spread based on the [Here](src/main/java/com/example/helper/BoxMuller.java) (if you don't want my pricing).
+
+The distribution graph below visualizes the simulated price spread:
+
+![Book Price Distribution](prices_visualizer.png)
+
+> The curve represents how prices naturally follow a bell-shaped pattern using the Box-Muller transform.
+
 
