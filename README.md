@@ -46,14 +46,14 @@ A: No — once the enchantment is applied, the trade is **locked permanently** f
 
 ## 📘 Price Generation Based on Statistical Distribution
 
-Book prices are generated using a **normal (Gaussian) distribution** from a sample space of **1,000,000 simulations**.
+Book prices are generated using a **normal (Gaussian) distribution** This is an example with sample space of **1,000,000 simulations**.
 
 - **Mean (μ)**: 32
 - **Standard Deviation (σ)**: *σ* (configurable based on price variability)
 
 This approach ensures that most prices are concentrated around **32 Emerald** , while higher or lower prices occur less frequently depending on the value of **σ**.
 
-You can the prices spread based on the [Here](src/main/java/com/example/helper/BoxMuller.java) (if you don't want my pricing).
+You see can the prices spread based on the [Here](src/main/java/com/example/helper/BoxMuller.java) (if you don't want my pricing).
 
 The distribution graph below visualizes the simulated price spread:
 
