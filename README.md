@@ -14,7 +14,9 @@
 * 🔒 **Locks** the trade after setting the enchantment to ensure a **balanced trading system** — no more infinite rerolling.
 * ⏱ Saves time and effort by eliminating random rerolls.
 
----
+## Downloads Links:
+- [CurseForge](https://www.curseforge.com/minecraft/mc-mods/ez-librarian)
+- [Availabe Version Here](https://github.com/Babailan/EZ-Librarian/tags)
 
 
 ## 🧠 Notes & Tips
