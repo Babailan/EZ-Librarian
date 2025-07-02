@@ -1,5 +1,6 @@
 package com.example.mixin;
 
+import com.example.helper.BoxMuller;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -188,10 +189,8 @@ public class LecternBlockEntityMixin extends BlockEntity {
         TradeOffer generatedTradeOffer = new TradeOffers.EnchantBookFactory(5, EnchantmentTags.TRADEABLE).create(villagerEntity, world.random);
         assert generatedTradeOffer != null;
 
-        //make a random price range(32,64);
-        int min = 32;
-        int max = 64;
-        int randomPrice = min + (int) (Math.random() * (max - min + 1));
+
+        int randomPrice = BoxMuller.generatePrice();
         TradedItem emerald = new TradedItem(Items.EMERALD, randomPrice);
         return new TradeOffer(emerald, generatedTradeOffer.getSecondBuyItem(), enchantedBook, generatedTradeOffer.getMaxUses(), generatedTradeOffer.getMerchantExperience(), generatedTradeOffer.getPriceMultiplier());
     }
