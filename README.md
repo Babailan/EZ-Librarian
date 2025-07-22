@@ -53,7 +53,7 @@ Book prices are generated using a **normal (Gaussian) distribution** This is an 
 
 This approach ensures that most prices are concentrated around **32 Emerald** , while higher or lower prices occur less frequently depending on the value of **σ**.
 
-You see can the prices spread based on the [Here](src/main/java/com/example/helper/BoxMuller.java) (if you don't want my pricing).
+You can edit the prices spread based on [Here](src/main/java/com/example/helper/BoxMuller.java) (if you don't want my pricing).
 
 The distribution graph below visualizes the simulated price spread:
 
