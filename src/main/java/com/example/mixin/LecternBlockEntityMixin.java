@@ -1,6 +1,5 @@
 package com.example.mixin;
 
-import com.example.helper.BoxMuller;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -13,7 +12,6 @@ import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -27,7 +25,9 @@ import net.minecraft.util.math.GlobalPos;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.TradeOffers;
-import net.minecraft.village.TradedItem;
+import net.minecraft.village.VillagerProfession;
+import net.minecraft.world.poi.PointOfInterestStorage;
+import net.minecraft.world.poi.PointOfInterestTypes;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -80,65 +80,101 @@ public class LecternBlockEntityMixin extends BlockEntity {
 
 
             boolean foundEnchantedBook = false;
-            // this will always be 2 since it's a novice.
-            for (int i = 0; i < 2; i++) {
+            int tradesToCheck = Math.min(2, currentTradeOfferList.size());
+
+            for (int i = 0; i < tradesToCheck; i++) {
                 TradeOffer offer = currentTradeOfferList.get(i);
                 ItemStack sellItem = offer.getSellItem();
-                boolean isEnchantedBook = Registries.ITEM.getId(sellItem.getItem()).getPath().equals("enchanted_book");
+                boolean isEnchantedBook = sellItem.isOf(Items.ENCHANTED_BOOK);
 
                 if (isEnchantedBook && !foundEnchantedBook) {
                     modifiedTradeOffer.add(targetBook);
                     foundEnchantedBook = true;
-                } else if (i == 1 && !foundEnchantedBook) {
-                    // If this is the last one and no enchanted book was found yet, insert targetBook
-                    modifiedTradeOffer.add(targetBook);
                 } else {
                     modifiedTradeOffer.add(offer);
                 }
+            }
+
+            // If we didn't find an enchanted book to replace, but have room, add it anyway
+            if (!foundEnchantedBook && modifiedTradeOffer.size() < 2) {
+                modifiedTradeOffer.add(targetBook);
             }
 
 
             villagerEntity.setOffers(modifiedTradeOffer);
             // Lock villager trade offer so memory module ai thinks it got job already even tho -1 it still matter.
             villagerEntity.setExperience(-1);
-            villagerEntity.getWorld().getChunk(villagerEntity.getBlockPos()).markNeedsSaving();
+            villagerEntity.getEntityWorld().getChunk(villagerEntity.getBlockPos()).markNeedsSaving();
             villagerEntity.playSound(SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE);
 
         }
     }
 
     /**
-     * Finds the villager that claimed this lectern as a job site.
-     *
-     * @return the matching VillagerEntity, or null if not found
+     * Finds the villager that has a registered POI connection to this lectern.
      */
     @Nullable
     @Unique
     private VillagerEntity getVillagerWhoClaimedJobSite() {
-        if (this.world != null) {
-            List<VillagerEntity> villagerEntityList = this.world.getEntitiesByClass(VillagerEntity.class, new Box(this.pos).expand(64), this::isVillagerLecternOwner);
-            if (!villagerEntityList.isEmpty()) {
-                return villagerEntityList.getFirst();
-            }
+        if (!(this.world instanceof ServerWorld serverWorld)) return null;
+
+        PointOfInterestStorage poiStorage = serverWorld.getPointOfInterestStorage();
+
+        // Early exit: if no librarian POI exists at this pos at all, skip entity scan
+        if (!poiStorage.test(this.pos, type -> type.matchesKey(PointOfInterestTypes.LIBRARIAN))) {
+            return null;
         }
-        return null;
+
+        Box searchBox = new Box(
+                this.pos.getX() - 48, this.pos.getY() - 6, this.pos.getZ() - 48,
+                this.pos.getX() + 48, this.pos.getY() + 6, this.pos.getZ() + 48
+        );
+
+        List<VillagerEntity> villagers = serverWorld.getEntitiesByClass(
+                VillagerEntity.class,
+                searchBox,
+                this::isVillagerAtThisPoi
+        );
+
+        if (villagers.size() > 1) {
+            System.out.println("[LecternMixin] Warning: multiple villagers claim POI at " + this.pos);
+        }
+
+        return villagers.isEmpty() ? null : villagers.getFirst();
     }
 
     /**
-     * Checks if the given villager owns this lectern as a job site.
-     *
-     * @param villagerEntity the villager to check
-     * @return true if their job site matches this lectern position
+     * Validates if the specific villager is the one currently holding the POI lease.
      */
     @Unique
-    private boolean isVillagerLecternOwner(VillagerEntity villagerEntity) {
-        Optional<GlobalPos> claimedLecternOfTheVillager = villagerEntity.getBrain().getOptionalMemory(MemoryModuleType.JOB_SITE);
-        if (claimedLecternOfTheVillager != null && claimedLecternOfTheVillager.isPresent()) {
-            return claimedLecternOfTheVillager.get().pos().compareTo(this.pos) == 0;
-        }
-        return false;
-    }
+    private boolean isVillagerAtThisPoi(VillagerEntity villager) {
+        if (!(this.world instanceof ServerWorld serverWorld)) return false;
 
+        // 1. Check the villager's brain memory points to this lectern
+        Optional<GlobalPos> jobSiteMemory = villager.getBrain()
+                .getOptionalMemory(MemoryModuleType.JOB_SITE);
+
+        if (jobSiteMemory.isEmpty()) return false;
+
+        GlobalPos jobSite = jobSiteMemory.get();
+
+        // 2. Must be in the same dimension and at the same position
+        if (!jobSite.dimension().equals(serverWorld.getRegistryKey())) return false;
+        if (!jobSite.pos().equals(this.pos)) return false;
+
+        // 3. Cross-check: POI storage must mark this position as occupied
+        PointOfInterestStorage poiStorage = serverWorld.getPointOfInterestStorage();
+        boolean poiIsOccupied = poiStorage.test(
+                this.pos,
+                type -> type.matchesKey(PointOfInterestTypes.LIBRARIAN)
+        );
+
+        // 4. Villager must be a librarian (profession check)
+        boolean isLibrarian = villager.getVillagerData().profession()
+                .matchesKey(VillagerProfession.LIBRARIAN);
+
+        return poiIsOccupied && isLibrarian;
+    }
     /**
      * Parses the written book and creates a trade offer for an enchanted book
      * based on the enchantment specified on the first page.
@@ -186,13 +222,11 @@ public class LecternBlockEntityMixin extends BlockEntity {
         ItemStack enchantedBook = new ItemStack(Items.ENCHANTED_BOOK);
         enchantedBook.set(DataComponentTypes.STORED_ENCHANTMENTS, enchantBuilder.build());
 
-        TradeOffer generatedTradeOffer = new TradeOffers.EnchantBookFactory(5, EnchantmentTags.TRADEABLE).create(villagerEntity, world.random);
+        TradeOffer generatedTradeOffer = new TradeOffers.EnchantBookFactory(5, EnchantmentTags.TRADEABLE).create((ServerWorld) world, villagerEntity, world.random);
         assert generatedTradeOffer != null;
 
 
-        int randomPrice = BoxMuller.generatePrice();
-        TradedItem emerald = new TradedItem(Items.EMERALD, randomPrice);
-        return new TradeOffer(emerald, generatedTradeOffer.getSecondBuyItem(), enchantedBook, generatedTradeOffer.getMaxUses(), generatedTradeOffer.getMerchantExperience(), generatedTradeOffer.getPriceMultiplier());
+        return new TradeOffer(generatedTradeOffer.getFirstBuyItem(), generatedTradeOffer.getSecondBuyItem(), enchantedBook, generatedTradeOffer.getMaxUses(), generatedTradeOffer.getMerchantExperience(), generatedTradeOffer.getPriceMultiplier());
     }
 
     /**
@@ -204,17 +238,19 @@ public class LecternBlockEntityMixin extends BlockEntity {
      */
     @Unique
     private int romanToInt(String stringLevel) {
-        try {
-            int level = Integer.parseInt(stringLevel);
-            return switch (stringLevel) {
-                case "ii" -> 2;
-                case "iii" -> 3;
-                case "iv" -> 4;
-                case "v" -> 5;
-                default -> level;
-            };
-        } catch (NumberFormatException e) {
-            return 5;
-        }
+        return switch (stringLevel.toLowerCase()) {
+            case "i" -> 1;
+            case "ii" -> 2;
+            case "iii" -> 3;
+            case "iv" -> 4;
+            case "v" -> 5;
+            default -> {
+                try {
+                    yield Integer.parseInt(stringLevel);
+                } catch (NumberFormatException e) {
+                    yield 1;
+                }
+            }
+        };
     }
 }
